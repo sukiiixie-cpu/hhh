@@ -1,0 +1,726 @@
+<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Let's Make Tanghulu! Quiz Time 🍡</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FFF5EB;--bg2:#FFE8D6;
+  --primary:#FF6B35;--primary-light:#FF8F65;--primary-dark:#E55A2B;
+  --secondary:#FFB347;--accent:#FF8C42;
+  --success:#27AE60;--success-light:#E8F8F0;
+  --error:#E74C3C;--error-light:#FDEDEC;
+  --text:#2D1B0E;--text-light:#8B6F47;--text-muted:#B89B7A;
+  --card:#FFFFFF;--border:#FFE0C2;
+  --shadow:0 4px 20px rgba(139,111,71,.12);
+  --shadow-lg:0 8px 32px rgba(139,111,71,.18);
+  --r:16px;--rs:10px;
+}
+html,body{
+  font-family:'Nunito',-apple-system,sans-serif;
+  background:linear-gradient(135deg,var(--bg) 0%,var(--bg2) 100%);
+  color:var(--text);min-height:100vh;overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+#app{max-width:500px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column}
+.screen{animation:fadeIn .4s ease;flex:1;display:flex;flex-direction:column}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounceIn{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes confettiFall{0%{transform:translateY(-100%) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.bounce-in{animation:bounceIn .5s ease}
+.shake-anim{animation:shake .5s ease}
+.pulse{animation:pulse 1.4s ease infinite}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:14px 32px;border:none;border-radius:var(--r);
+  font-family:inherit;font-size:17px;font-weight:700;
+  cursor:pointer;transition:all .2s;gap:8px;user-select:none;
+}
+.btn:active{transform:scale(.96)}
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:#fff;box-shadow:0 4px 16px rgba(255,107,53,.35);
+}
+.btn-primary:hover{box-shadow:0 6px 24px rgba(255,107,53,.45)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-secondary{background:var(--card);color:var(--primary);border:2px solid var(--border)}
+.btn-full{width:100%}
+
+/* Welcome */
+.welcome-screen{justify-content:center;align-items:center;text-align:center;gap:20px}
+.welcome-icon{font-size:80px;animation:float 3s ease infinite}
+.welcome-title{font-size:clamp(24px,6vw,30px);font-weight:900;color:var(--primary-dark);line-height:1.3}
+.welcome-sub{font-size:15px;color:var(--text-light);line-height:1.6}
+.welcome-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:4px}
+.welcome-tag{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--text-light)}
+
+/* Name */
+.name-screen{justify-content:center;align-items:center;gap:24px;text-align:center}
+.input-wrap{width:100%;text-align:left}
+.input-wrap label{display:block;font-size:14px;font-weight:700;color:var(--text-light);margin-bottom:8px}
+.input-wrap input{
+  width:100%;padding:14px 18px;border:2.5px solid var(--border);border-radius:var(--rs);
+  font-family:inherit;font-size:18px;font-weight:600;color:var(--text);
+  background:var(--card);outline:none;transition:border-color .2s;
+}
+.input-wrap input:focus{border-color:var(--primary)}
+.input-wrap input::placeholder{color:var(--text-muted);font-weight:400}
+
+/* Waiting */
+.waiting-screen{justify-content:center;align-items:center;gap:20px;text-align:center}
+.waiting-icon{font-size:56px}
+.player-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--card);border:2px solid var(--primary);border-radius:30px;
+  padding:8px 20px;font-size:18px;font-weight:800;color:var(--primary);
+}
+.waiting-text{font-size:17px;font-weight:700;color:var(--text-light)}
+.tip-box{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--rs);
+  padding:14px;font-size:13px;color:var(--text-light);line-height:1.5;text-align:left;width:100%;
+}
+.tip-box strong{color:var(--text)}
+
+/* Countdown */
+.cd-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(45,27,14,.75);display:flex;align-items:center;
+  justify-content:center;z-index:1000;
+}
+.cd-num{
+  font-size:min(120px,30vw);font-weight:900;color:#fff;
+  text-shadow:0 4px 40px rgba(255,107,53,.5);animation:bounceIn .45s ease;
+}
+
+/* Question */
+.q-screen{gap:14px}
+.q-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.q-prog{display:flex;align-items:center;gap:8px}
+.q-badge{background:var(--primary);color:#fff;font-size:13px;font-weight:800;padding:5px 12px;border-radius:20px}
+.q-dots{display:flex;gap:4px}
+.q-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .3s}
+.q-dot.ok{background:var(--success)}.q-dot.no{background:var(--error)}
+.q-dot.now{background:var(--primary);transform:scale(1.3)}
+
+/* Timer */
+.tm-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
+.tm-svg{width:52px;height:52px;transform:rotate(-90deg)}
+.tm-bg{fill:none;stroke:var(--border);stroke-width:4}
+.tm-ring{fill:none;stroke:var(--primary);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke .3s}
+.tm-ring.warn{stroke:var(--secondary)}.tm-ring.danger{stroke:var(--error)}
+.tm-txt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;font-weight:800}
+.tm-txt.danger{color:var(--error)}
+
+/* Q body */
+.q-body{flex:1;display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-bottom:4px}
+.q-step{
+  display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  background:var(--secondary);color:var(--text);font-size:12px;font-weight:700;
+  padding:4px 12px;border-radius:20px;
+}
+.q-text{font-size:clamp(16px,4.5vw,19px);font-weight:800;line-height:1.45}
+.q-hint{font-size:13px;color:var(--text-muted);font-style:italic}
+.q-hl{color:var(--primary);background:rgba(255,107,53,.1);padding:1px 5px;border-radius:4px}
+
+/* Options */
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt-btn{
+  display:flex;align-items:flex-start;gap:12px;padding:13px 15px;
+  background:var(--card);border:2.5px solid var(--border);border-radius:var(--rs);
+  cursor:pointer;transition:all .2s;text-align:left;font-family:inherit;
+  font-size:15px;font-weight:600;color:var(--text);line-height:1.4;width:100%;
+}
+.opt-btn:active{transform:scale(.98)}
+.opt-btn.sel{border-color:var(--primary);background:rgba(255,107,53,.07)}
+.opt-btn.ok{border-color:var(--success);background:var(--success-light)}
+.opt-btn.no{border-color:var(--error);background:var(--error-light)}
+.opt-ltr{
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;background:var(--bg);
+  font-size:14px;font-weight:800;flex-shrink:0;transition:all .2s;
+}
+.opt-btn.sel .opt-ltr{background:var(--primary);color:#fff}
+.opt-btn.ok .opt-ltr{background:var(--success);color:#fff}
+.opt-btn.no .opt-ltr{background:var(--error);color:#fff}
+
+/* Ordering */
+.ord-list{display:flex;flex-direction:column;gap:9px}
+.ord-item{
+  display:flex;align-items:center;gap:12px;padding:13px 15px;
+  background:var(--card);border:2.5px solid var(--border);border-radius:var(--rs);
+  cursor:pointer;transition:all .2s;font-weight:600;font-size:15px;
+}
+.ord-item:active{transform:scale(.98)}
+.ord-item.picked{border-color:var(--primary);background:rgba(255,107,53,.07)}
+.ord-num{
+  display:flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:50%;background:var(--bg);
+  font-size:15px;font-weight:800;flex-shrink:0;transition:all .2s;color:var(--text-muted);
+}
+.ord-item.picked .ord-num{background:var(--primary);color:#fff}
+.ord-icon{font-size:22px;flex-shrink:0}
+
+/* Fill-in */
+.fill-box{
+  font-size:17px;font-weight:700;line-height:1.7;
+  padding:16px;background:var(--card);border-radius:var(--rs);border:1px solid var(--border);
+}
+.fill-inp{
+  display:inline-block;width:110px;padding:4px 8px;border:none;
+  border-bottom:3px solid var(--primary);font-family:inherit;font-size:18px;
+  font-weight:800;color:var(--primary);background:rgba(255,107,53,.08);
+  outline:none;text-align:center;border-radius:4px 4px 0 0;vertical-align:middle;
+}
+
+/* Matching */
+.match-wrap{display:flex;flex-direction:column;gap:14px}
+.match-lbl{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.match-terms{display:flex;flex-wrap:wrap;gap:7px}
+.match-tm{
+  padding:7px 13px;border:2.5px solid var(--border);border-radius:20px;
+  font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;background:var(--card);
+}
+.match-tm.act{border-color:var(--primary);background:rgba(255,107,53,.1);box-shadow:0 0 0 3px rgba(255,107,53,.2)}
+.match-tm.paired{color:#fff}
+.match-defs{display:flex;flex-direction:column;gap:7px}
+.match-df{
+  padding:11px 14px;border:2.5px solid var(--border);border-radius:var(--rs);
+  font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;background:var(--card);
+}
+.match-df.paired{color:#fff}
+.mc0{background:#3498DB!important;border-color:#3498DB!important}
+.mc1{background:#27AE60!important;border-color:#27AE60!important}
+.mc2{background:#8E44AD!important;border-color:#8E44AD!important}
+.mc3{background:#E67E22!important;border-color:#E67E22!important}
+
+.submit-area{margin-top:auto;padding-top:12px}
+
+/* Reveal */
+.reveal{text-align:center;gap:16px;justify-content:center;align-items:center}
+.reveal-icon{font-size:64px;animation:bounceIn .5s ease}
+.reveal-txt{font-size:22px;font-weight:800}
+.reveal-ok{color:var(--success)}.reveal-no{color:var(--error)}
+.reveal-box{
+  font-size:15px;color:var(--text-light);line-height:1.55;
+  padding:14px 16px;background:var(--card);border-radius:var(--rs);border:1px solid var(--border);
+  text-align:left;width:100%;
+}
+.reveal-box b{color:var(--text)}
+.score-now{font-size:14px;font-weight:700;color:var(--text-muted)}
+.score-now span{color:var(--primary);font-size:16px}
+
+/* Results */
+.res-screen{justify-content:center;align-items:center;gap:18px;text-align:center;padding-bottom:32px}
+.res-title{font-size:clamp(24px,6vw,30px);font-weight:900;color:var(--primary-dark)}
+.res-score{font-size:clamp(44px,12vw,56px);font-weight:900;color:var(--primary)}
+.res-label{font-size:15px;color:var(--text-light);font-weight:600;line-height:1.5}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;width:100%;margin:8px 0}
+.pod-item{display:flex;flex-direction:column;align-items:center;gap:6px;animation:bounceIn .6s ease backwards}
+.pod-item:nth-child(1){animation-delay:.2s}.pod-item:nth-child(2){animation-delay:0s}.pod-item:nth-child(3){animation-delay:.4s}
+.pod-av{
+  width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:26px;background:var(--card);border:3px solid var(--border);box-shadow:var(--shadow);
+}
+.pod-item.g .pod-av{border-color:#FFD700}.pod-item.s .pod-av{border-color:#C0C0C0}.pod-item.b .pod-av{border-color:#CD7F32}
+.pod-name{font-size:13px;font-weight:800;max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod-sc{font-size:11px;color:var(--text-muted);font-weight:600}
+.pod-bar{
+  width:clamp(65px,20vw,82px);border-radius:8px 8px 0 0;
+  display:flex;align-items:flex-start;justify-content:center;
+  font-size:20px;font-weight:900;color:#fff;padding-top:10px;
+}
+.pod-item.g .pod-bar{background:linear-gradient(180deg,#FFD700,#FFA500);height:100px}
+.pod-item.s .pod-bar{background:linear-gradient(180deg,#C0C0C0,#A0A0A0);height:75px}
+.pod-item.b .pod-bar{background:linear-gradient(180deg,#CD7F32,#A0522D);height:55px}
+.my-rank{
+  background:var(--card);border-radius:var(--r);padding:14px 16px;border:2.5px solid var(--primary);
+  width:100%;display:flex;align-items:center;gap:12px;text-align:left;
+}
+.my-rank-num{
+  background:var(--primary);color:#fff;font-size:18px;font-weight:900;
+  width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.my-rank-name{font-size:16px;font-weight:800}
+.my-rank-sc{font-size:13px;color:var(--text-light)}
+.confetti{
+  position:fixed;width:10px;height:10px;top:-20px;
+  animation:confettiFall linear forwards;z-index:999;pointer-events:none;
+}
+.is-me{color:var(--primary)!important}
+
+/* Detail breakdown */
+.breakdown{width:100%;text-align:left}
+.bd-row{
+  display:flex;align-items:center;gap:8px;padding:6px 0;
+  border-bottom:1px solid var(--border);font-size:13px;font-weight:600;
+}
+.bd-row:last-child{border:none}
+.bd-num{color:var(--text-muted);width:22px;text-align:center}
+.bd-icon{font-size:16px}
+.bd-label{flex:1;color:var(--text-light)}
+
+@media(max-width:380px){
+  .q-text{font-size:16px}
+  .opt-btn{font-size:14px;padding:11px 13px}
+  .match-tm{font-size:12px;padding:6px 10px}
+  .match-df{font-size:13px;padding:9px 12px}
+  .pod-bar{width:60px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ─── STATE ───
+const S={
+  screen:'welcome', name:'', qIdx:0, answers:[], score:0,
+  timer:null, timeLeft:0,
+  sel:null, order:[], blank:'', pairs:{}, pairSel:null,
+  cdNum:3
+};
+
+// ─── QUESTIONS ───
+const QS=[
+  {
+    type:'ordering', step:'All Steps', icon:'📋', time:20,
+    text:'Put the steps in the correct order.',
+    hint:'Tap cards in the order you think is correct',
+    items:[
+      {id:0,lbl:'A',txt:'Prepare fruits',ic:'🍇'},
+      {id:1,lbl:'B',txt:'String fruits',ic:'🥢'},
+      {id:2,lbl:'C',txt:'Cook syrup',ic:'🍯'},
+      {id:3,lbl:'D',txt:'Combine with milkskin',ic:'🥛'},
+    ],
+    correct:[0,1,2,3],
+    aText:'A → B → C → D: Prepare → String → Cook → Combine'
+  },
+  {
+    type:'choice', step:'Step 1 · Prepare Fruits', icon:'🍇', time:15,
+    text:'Why should the fruit be frozen for <span class="q-hl">about 5 minutes</span>?',
+    opts:[
+      {id:'A',t:'To make it sweeter'},
+      {id:'B',t:'To keep it firm and dry so syrup sticks better'},
+      {id:'C',t:'To make it larger'},
+      {id:'D',t:'To cool it down for serving'},
+    ],
+    ans:'B',
+    aText:'Freezing keeps the fruit <b>firm and dry</b>, helping the syrup <b>stick better</b>.'
+  },
+  {
+    type:'choice', step:'Grammar Focus', icon:'📝', time:15,
+    text:'Which sentence is an <span class="q-hl">imperative sentence</span> (command)?',
+    opts:[
+      {id:'A',t:'The fruit is firm and dry.'},
+      {id:'B',t:'Wash the fruit thoroughly and dry it completely.'},
+      {id:'C',t:'The syrup turns amber.'},
+      {id:'D',t:'The fruit will not fall off easily.'},
+    ],
+    ans:'B',
+    aText:'<b>Imperatives</b> give instructions/commands. "Wash…" and "dry…" tell you what to do.'
+  },
+  {
+    type:'fillin', step:'Step 2 · String Fruits', icon:'🥢', time:15,
+    text:'Fill in the blank with the correct <span class="q-hl">action word</span>:',
+    sentence:'_____ 3 to 4 pieces of fruit on each skewer.',
+    ans:'string',
+    aText:'"<b>String</b>" means to thread items onto a stick or string.'
+  },
+  {
+    type:'choice', step:'Step 3 · Cook Syrup', icon:'🍯', time:12,
+    text:'In "<span class="q-hl">Do not stir it</span> while cooking," what does <span class="q-hl">stir</span> mean?',
+    opts:[
+      {id:'A',t:'Mix with a spoon in a circular motion'},
+      {id:'B',t:'Freeze slowly'},
+      {id:'C',t:'Pour carefully'},
+      {id:'D',t:'Cut into pieces'},
+    ],
+    ans:'A',
+    aText:'"<b>Stir</b>" means to mix something by moving a spoon around in it. 🥄'
+  },
+  {
+    type:'choice', step:'Vocabulary · Color', icon:'🎨', time:12,
+    text:'What color does <span class="q-hl">amber</span> describe?',
+    opts:[
+      {id:'A',t:'Golden-brown, like honey 🍯'},
+      {id:'B',t:'Bright blue'},
+      {id:'C',t:'Light pink'},
+      {id:'D',t:'Pure white'},
+    ],
+    ans:'A',
+    aText:'<b>Amber</b> is a warm golden-brown color, like honey or tree resin.'
+  },
+  {
+    type:'choice', step:'Vocabulary · Texture', icon:'🔍', time:12,
+    text:'If syrup is <span class="q-hl">grainy</span>, it means it is _____.',
+    opts:[
+      {id:'A',t:'Smooth and silky'},
+      {id:'B',t:'Full of small sugar pieces and not smooth'},
+      {id:'C',t:'Very cold'},
+      {id:'D',t:'Extremely sweet'},
+    ],
+    ans:'B',
+    aText:'"<b>Grainy</b>" means having a rough texture with small grains/particles.'
+  },
+  {
+    type:'matching', step:'Quantity Expressions', icon:'🔢', time:25,
+    text:'Match each expression with its meaning.',
+    hint:'Tap a term, then tap its definition',
+    terms:['about / around','ratio','grams (g)','2 : 1'],
+    defs:['not exact, approximation','relationship between amounts','unit of weight','sugar is twice the water'],
+    correct:{0:0,1:1,2:2,3:3},
+    aText:'about ≈ approximation · ratio = relationship · grams = weight unit · 2:1 = sugar twice water'
+  }
+];
+
+// ─── UTILS ───
+const $=id=>document.getElementById(id);
+const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+const CIRC=2*Math.PI*22;
+
+// ─── RENDER ROUTER ───
+const app=document.getElementById('app');
+function render(){
+  ({welcome:rWelcome,name:rName,waiting:rWaiting,countdown:rCountdown,
+    question:rQuestion,reveal:rReveal,results:rResults})[S.screen]();
+}
+
+// ─── WELCOME ───
+function rWelcome(){
+  app.innerHTML=`
+  <div class="screen welcome-screen">
+    <div class="welcome-icon">🍡</div>
+    <div class="welcome-title">Let's Make Tanghulu!<br>Quiz Time</div>
+    <div class="welcome-sub">Fruit Skewer Challenge 🍇🍓<br>Can You Follow the Recipe?</div>
+    <div class="welcome-tags">
+      <span class="welcome-tag">8 Questions</span>
+      <span class="welcome-tag">10-25s Each</span>
+      <span class="welcome-tag">Vocabulary</span>
+      <span class="welcome-tag">Grammar</span>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="go('name')">Let's Go! 🚀</button>
+  </div>`;
+}
+
+// ─── NAME ───
+function rName(){
+  app.innerHTML=`
+  <div class="screen name-screen">
+    <div style="font-size:52px">👋</div>
+    <div style="font-size:22px;font-weight:800">What's your name?</div>
+    <div class="input-wrap">
+      <label>Enter your name to join the quiz</label>
+      <input type="text" id="ni" placeholder="Your name here..." maxlength="20"
+             autocomplete="off" onkeydown="if(event.key==='Enter')submitName()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="submitName()">Join Quiz ✋</button>
+  </div>`;
+  setTimeout(()=>$('ni')?.focus(),120);
+}
+function submitName(){
+  const v=$('ni')?.value?.trim();
+  if(!v){$('ni').style.borderColor='var(--error)';$('ni').placeholder='Please enter your name!';return}
+  S.name=v;go('waiting');
+}
+
+// ─── WAITING ───
+function rWaiting(){
+  app.innerHTML=`
+  <div class="screen waiting-screen">
+    <div class="waiting-icon pulse">⏳</div>
+    <div class="player-badge">🙋 ${esc(S.name)}</div>
+    <div class="waiting-text">Waiting for the teacher to start…</div>
+    <div class="tip-box">
+      <strong>💡 Quick preview:</strong><br>
+      You'll answer <strong>8 questions</strong> about making <strong>Tanghulu</strong> (糖葫芦).<br>
+      Topics: steps order, vocabulary (<em>stir, amber, grainy, string</em>),
+      grammar (<em>imperatives</em>), and quantity expressions.
+    </div>
+    <button class="btn btn-primary btn-full" onclick="startCD()">▶ Start Quiz</button>
+    <div style="font-size:12px;color:var(--text-muted)">(Teacher: press Start when all students are ready)</div>
+  </div>`;
+}
+
+// ─── COUNTDOWN ───
+function startCD(){S.screen='countdown';S.cdNum=3;render();runCD()}
+function runCD(){
+  const iv=setInterval(()=>{
+    S.cdNum--;
+    if(S.cdNum<=0){clearInterval(iv);S.qIdx=0;S.answers=[];S.score=0;QS.forEach(q=>q._sh=false);startQ()}
+    else render();
+  },750);
+}
+function rCountdown(){
+  app.innerHTML=`<div class="cd-overlay"><div class="cd-num" key="${S.cdNum}">${S.cdNum}</div></div>`;
+}
+
+// ─── START QUESTION ───
+function startQ(){
+  const q=QS[S.qIdx];
+  S.screen='question';S.timeLeft=q.time;
+  S.sel=null;S.order=[];S.blank='';S.pairs={};S.pairSel=null;
+  if(q.type==='ordering'&&!q._sh){q._si=shuffle(q.items);q._sh=true}
+  if(q.type==='matching'&&!q._sh){q._do=shuffle(q.defs.map((_,i)=>i));q._sh=true}
+  render();startTimer();
+}
+function startTimer(){
+  clearInterval(S.timer);
+  S.timer=setInterval(()=>{
+    S.timeLeft--;updateTimer();
+    if(S.timeLeft<=0){clearInterval(S.timer);submit()}
+  },1000);
+}
+function updateTimer(){
+  const q=QS[S.qIdx],tt=document.querySelector('.tm-txt'),tr=document.querySelector('.tm-ring');
+  if(!tt||!tr)return;
+  const p=S.timeLeft/q.time;
+  tt.textContent=S.timeLeft;
+  tr.style.strokeDashoffset=CIRC*(1-p);
+  tr.classList.remove('warn','danger');tt.classList.remove('danger');
+  if(p<=.25){tr.classList.add('danger');tt.classList.add('danger')}
+  else if(p<=.5)tr.classList.add('warn');
+}
+
+// ─── RENDER QUESTION ───
+function rQuestion(){
+  const q=QS[S.qIdx],p=S.timeLeft/q.time;
+  let dots='';
+  for(let i=0;i<QS.length;i++){
+    let c='q-dot';
+    if(i<S.qIdx)c+=S.answers[i]?.ok?' ok':' no';
+    else if(i===S.qIdx)c+=' now';
+    dots+=`<div class="${c}"></div>`;
+  }
+  let body='';
+  if(q.type==='choice')body=rOpts(q);
+  else if(q.type==='ordering')body=rOrd(q);
+  else if(q.type==='fillin')body=rFill(q);
+  else if(q.type==='matching')body=rMatch(q);
+
+  const needSubmit=q.type!=='choice';
+  app.innerHTML=`
+  <div class="screen q-screen">
+    <div class="q-header">
+      <div class="q-prog">
+        <div class="q-badge">${S.qIdx+1} / ${QS.length}</div>
+        <div class="q-dots">${dots}</div>
+      </div>
+      <div class="tm-wrap">
+        <svg class="tm-svg" viewBox="0 0 48 48">
+          <circle class="tm-bg" cx="24" cy="24" r="22"/>
+          <circle class="tm-ring${p<=.25?' danger':p<=.5?' warn':''}" cx="24" cy="24" r="22"
+                  stroke-dasharray="${CIRC}" stroke-dashoffset="${CIRC*(1-p)}"/>
+        </svg>
+        <div class="tm-txt${p<=.25?' danger':''}">${S.timeLeft}</div>
+      </div>
+    </div>
+    <div class="q-body">
+      <div class="q-step">${q.icon} ${q.step}</div>
+      <div class="q-text">${q.text}</div>
+      ${q.hint?`<div class="q-hint">💡 ${q.hint}</div>`:''}
+      ${body}
+    </div>
+    ${needSubmit?`<div class="submit-area"><button class="btn btn-primary btn-full" onclick="submit()">Confirm ✓</button></div>`:''}
+  </div>`;
+  if(q.type==='fillin'){const inp=$('bi');if(inp){inp.value=S.blank;setTimeout(()=>inp.focus(),60)}}
+}
+
+// ── Choice ──
+function rOpts(q){
+  return `<div class="opts">${q.opts.map(o=>`
+    <button class="opt-btn${S.sel===o.id?' sel':''}" onclick="pickOpt('${o.id}')">
+      <div class="opt-ltr">${o.id}</div><div>${o.t}</div>
+    </button>`).join('')}</div>`;
+}
+function pickOpt(id){S.sel=id;render();setTimeout(submit,350)}
+
+// ── Ordering ──
+function rOrd(q){
+  return `<div class="ord-list">${q._si.map(it=>{
+    const oi=S.order.indexOf(it.id),picked=oi!==-1;
+    return `<button class="ord-item${picked?' picked':''}" onclick="tapOrd(${it.id})">
+      <div class="ord-num">${picked?oi+1:'?'}</div>
+      <div class="ord-icon">${it.ic}</div>
+      <div>${it.txt}</div>
+    </button>`;
+  }).join('')}</div>`;
+}
+function tapOrd(id){
+  const i=S.order.indexOf(id);
+  if(i!==-1)S.order=S.order.slice(0,i);
+  else S.order.push(id);
+  render();
+}
+
+// ── Fill-in ──
+function rFill(q){
+  const parts=q.sentence.split('_____');
+  return `<div class="fill-box">${parts[0]||''}<input type="text" id="bi" class="fill-inp" placeholder="?"
+    autocomplete="off" autocapitalize="off" spellcheck="false"
+    oninput="S.blank=this.value" onkeydown="if(event.key==='Enter')submit()">${parts[1]||''}</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px">🥢 Think about the action word for putting fruit on skewers</div>`;
+}
+
+// ── Matching ──
+function rMatch(q){
+  const cols=['mc0','mc1','mc2','mc3'];
+  const tcm={},dcm={};let ci=0;
+  for(const[t,d]of Object.entries(S.pairs)){tcm[t]=ci;dcm[d]=ci;ci++}
+  return `<div class="match-wrap">
+    <div class="match-lbl">Terms</div>
+    <div class="match-terms">${q.terms.map((t,i)=>{
+      const paired=String(i)in S.pairs, act=S.pairSel===i;
+      let c='match-tm';if(paired)c+=' paired '+cols[tcm[String(i)]];if(act)c+=' act';
+      return `<button class="${c}" onclick="tapTerm(${i})">${t}</button>`;
+    }).join('')}</div>
+    <div class="match-lbl" style="margin-top:6px">Definitions</div>
+    <div class="match-defs">${q._do.map(oi=>{
+      const paired=String(oi)in dcm;
+      let c='match-df';if(paired)c+=' paired '+cols[dcm[String(oi)]];
+      return `<button class="${c}" onclick="tapDef(${oi})">${q.defs[oi]}</button>`;
+    }).join('')}</div>
+  </div>`;
+}
+function tapTerm(i){
+  if(String(i)in S.pairs){delete S.pairs[String(i)];S.pairSel=null}
+  else S.pairSel=i;
+  render();
+}
+function tapDef(d){
+  if(S.pairSel===null)return;
+  for(const[t,pd]of Object.entries(S.pairs)){if(pd===d){delete S.pairs[t];break}}
+  S.pairs[String(S.pairSel)]=d;
+  S.pairSel=null;render();
+}
+
+// ─── SUBMIT ───
+function submit(){
+  clearInterval(S.timer);
+  const q=QS[S.qIdx];let ok=false,ua='';
+  switch(q.type){
+    case'choice':ok=S.sel===q.ans;ua=S.sel||'—';break;
+    case'ordering':
+      ok=S.order.length===q.correct.length&&S.order.every((v,i)=>v===q.correct[i]);
+      ua=S.order.map(id=>q.items.find(x=>x.id===id)?.lbl).join('→')||'—';break;
+    case'fillin':{
+      const inp=$('bi');if(inp)S.blank=inp.value;
+      ok=S.blank.trim().toLowerCase()===q.ans.toLowerCase();ua=S.blank||'—';break}
+    case'matching':
+      ok=Object.keys(q.correct).every(k=>S.pairs[k]===q.correct[k])
+         &&Object.keys(S.pairs).length===Object.keys(q.correct).length;
+      ua=Object.keys(S.pairs).length+'/4';break;
+  }
+  if(ok)S.score++;
+  S.answers.push({ok,ua});
+  S.screen='reveal';render();
+  setTimeout(()=>{
+    if(S.qIdx<QS.length-1){S.qIdx++;startQ()}
+    else{S.screen='results';render();confetti()}
+  },ok?2200:3200);
+}
+
+// ─── REVEAL ───
+function rReveal(){
+  const q=QS[S.qIdx],a=S.answers[S.answers.length-1];
+  app.innerHTML=`
+  <div class="screen reveal">
+    <div class="reveal-icon">${a.ok?'🎉':'😅'}</div>
+    <div class="reveal-txt ${a.ok?'reveal-ok':'reveal-no'}">${a.ok?'Correct! ✓':'Not quite…'}</div>
+    <div class="reveal-box">${q.aText}</div>
+    <div class="score-now">Score: <span>${S.score}</span> / ${S.answers.length}</div>
+    <div style="font-size:13px;color:var(--text-muted)">${S.qIdx<QS.length-1?'Next question coming up…':'Calculating results…'}</div>
+  </div>`;
+}
+
+// ─── RESULTS ───
+function rResults(){
+  const fakes=[
+    {n:'Emma',av:'🐰'},{n:'Leo',av:'🦊'},{n:'Mia',av:'🐱'},
+    {n:'Jack',av:'🐻'},{n:'Sophie',av:'🐨'},{n:'Tom',av:'🐸'},{n:'Lily',av:'🦄'}
+  ];
+  const all=fakes.map(s=>({...s,sc:Math.floor(Math.random()*4)+4}));
+  const avs=['🐼','🐯','🦁','🐮','🐷'];
+  all.push({n:S.name,av:avs[Math.floor(Math.random()*avs.length)],sc:S.score,me:true});
+  all.sort((a,b)=>b.sc-a.sc||(a.me?-1:b.me?1:0));
+  const top3=all.slice(0,3);
+  const rank=all.findIndex(s=>s.me)+1;
+  const me=all.find(s=>s.me);
+  const podOrd=[top3[1],top3[0],top3[2]].filter(Boolean);
+  const podCls=['s','g','b'],podLbl=['🥈','🥇','🥉'];
+  const msg=S.score>=7?'🌟 Amazing! You nailed it!':S.score>=5?'👏 Good job! Keep it up!':S.score>=3?'💪 Not bad! Keep practicing!':'📚 Keep learning! You\'ll improve!';
+
+  // Breakdown
+  let bd='';
+  S.answers.forEach((a,i)=>{
+    bd+=`<div class="bd-row">
+      <div class="bd-num">${i+1}</div>
+      <div class="bd-icon">${a.ok?'✅':'❌'}</div>
+      <div class="bd-label">${QS[i].step}</div>
+    </div>`;
+  });
+
+  app.innerHTML=`
+  <div class="screen res-screen">
+    <div style="font-size:52px">🏆</div>
+    <div class="res-title">Quiz Complete!</div>
+    <div class="res-score">${S.score} / ${QS.length}</div>
+    <div class="res-label">${msg}</div>
+    <div style="font-size:17px;font-weight:800;color:var(--text-light)">Top 3 Quiz Champions</div>
+    <div class="podium">
+      ${podOrd.map((s,i)=>s?`
+      <div class="pod-item ${podCls[i]}">
+        <div class="pod-av" ${s.me?'style="box-shadow:0 0 0 3px var(--primary)"':''}>${s.av}</div>
+        <div class="pod-name ${s.me?'is-me':''}">${esc(s.n)}</div>
+        <div class="pod-sc">${s.sc}/${QS.length}</div>
+        <div class="pod-bar">${podLbl[i]}</div>
+      </div>`:'').join('')}
+    </div>
+    <div class="my-rank">
+      <div class="my-rank-num">#${rank}</div>
+      <div style="flex:1">
+        <div class="my-rank-name">${me.av} ${esc(S.name)}</div>
+        <div class="my-rank-sc">${S.score} correct · Rank ${rank} of ${all.length}</div>
+      </div>
+    </div>
+    <div class="breakdown card" style="margin-top:4px">
+      <div style="font-size:14px;font-weight:800;margin-bottom:6px;color:var(--text-light)">Your Answers</div>
+      ${bd}
+    </div>
+    <button class="btn btn-primary btn-full" onclick="restart()" style="margin-top:4px">Try Again 🔄</button>
+    <button class="btn btn-secondary btn-full" onclick="go('welcome')">Back to Home</button>
+  </div>`;
+}
+
+function restart(){S.screen='waiting';render()}
+
+// ─── CONFETTI ───
+function confetti(){
+  const colors=['#FF6B35','#FFB347','#FF8C42','#27AE60','#3498DB','#E74C3C','#9B59B6','#FFD700'];
+  for(let i=0;i<45;i++){
+    const e=document.createElement('div');e.className='confetti';
+    e.style.left=Math.random()*100+'%';
+    e.style.backgroundColor=colors[Math.floor(Math.random()*colors.length)];
+    e.style.width=(Math.random()*8+5)+'px';
+    e.style.height=(Math.random()*8+5)+'px';
+    e.style.animationDuration=(Math.random()*2+2)+'s';
+    e.style.animationDelay=Math.random()*1.5+'s';
+    e.style.borderRadius=Math.random()>.5?'50%':'2px';
+    document.body.appendChild(e);
+    setTimeout(()=>e.remove(),5000);
+  }
+}
+
+// ─── NAV ───
+function go(s){S.screen=s;render()}
+
+// ─── INIT ───
+render();
+</script>
+
+
+</body></html>
